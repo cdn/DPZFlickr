@@ -29,6 +29,19 @@ $callback = sprintf('%s://%s:%d%s',
 
 $flickr = new Flickr($flickrApiKey, $flickrApiSecret, $callback);
 
+/*
+
+  if you already have OAuth credentials (with >=write capability)
+  you can substitute the call to ->authenticate for one to
+
+  $flickr->isValidOauthToken(
+    <oauth-token>, <oauth-token-secret>
+  );
+
+  obviously for test purposes only ;o)
+
+*/
+
 if (!$flickr->authenticate('write'))
 {
     die("Hmm, something went wrong...\n");
@@ -49,7 +62,11 @@ if (!empty($_POST))
 
     if ($photo['size'] > 0)
     {
-        $parameters['photo'] = '@' . $photo['tmp_name'];
+        if(version_compare(phpversion(), '5.5', '>=')) {
+            $parameters['photo'] = new \CURLFile($photo['tmp_name']);
+        } else {
+            $parameters['photo'] = '@' . $photo['tmp_name'];
+        }
     }
 
     $response = $flickr->upload($parameters);
